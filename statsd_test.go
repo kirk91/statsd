@@ -78,7 +78,7 @@ func TestIncrement(t *testing.T) {
 
 	s.Reset()
 	c.Increment(statsd.String("foo"), statsd.Int(1), statsd.String("bar"))
-	time.Sleep(time.Millisecond)
+	time.Sleep(time.Millisecond * 10)
 	assert.Equal(t, "foo.1.bar:1|c\n", s.Content())
 }
 
@@ -92,7 +92,7 @@ func TestCount(t *testing.T) {
 	c.CountInt64(3, statsd.String("foo"))
 	c.CountInt(10, statsd.String("bar"))
 	c.CountInt64(100, statsd.String("bar"))
-	time.Sleep(time.Millisecond * 2)
+	time.Sleep(time.Millisecond * 10)
 	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
 }
 
@@ -105,7 +105,7 @@ func TestGauge(t *testing.T) {
 	c.GaugeInt(1)
 	c.GaugeInt(1, statsd.String("foo"), statsd.String("bar"))
 	c.GaugeInt64(2, statsd.String("foo"), statsd.String("bar"))
-	time.Sleep(time.Millisecond * 2)
+	time.Sleep(time.Millisecond * 10)
 	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\n", s.Content())
 }
 
@@ -115,7 +115,7 @@ func TestTiming(t *testing.T) {
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 	c.Timing(time.Now(), statsd.String("foo"))
-	time.Sleep(time.Millisecond * 2)
+	time.Sleep(time.Millisecond * 10)
 	assert.Contains(t, s.Content(), "|ms\n")
 }
 
