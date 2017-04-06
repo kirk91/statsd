@@ -25,8 +25,9 @@ func TestNewClient(t *testing.T) {
 }
 
 type mockServer struct {
-	l   net.PacketConn
-	buf bytes.Buffer
+	l      net.PacketConn
+	closed bool
+	buf    bytes.Buffer
 }
 
 func newMockServer(t *testing.T) *mockServer {
@@ -38,6 +39,9 @@ func newMockServer(t *testing.T) *mockServer {
 	go func() {
 		b := make([]byte, 1024)
 		for {
+			if s.closed {
+				return
+			}
 			n, _, err := l.ReadFrom(b)
 			if n == 0 {
 				continue
@@ -55,6 +59,7 @@ func (s *mockServer) Addr() string {
 }
 
 func (s *mockServer) Close() {
+	s.closed = true
 	s.l.Close()
 }
 
@@ -78,7 +83,7 @@ func TestIncrement(t *testing.T) {
 
 	s.Reset()
 	c.Increment(statsd.String("foo"), statsd.Int(1), statsd.String("bar"))
-	time.Sleep(time.Millisecond * 10)
+	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo.1.bar:1|c\n", s.Content())
 }
 
@@ -92,7 +97,7 @@ func TestCount(t *testing.T) {
 	c.CountInt64(3, statsd.String("foo"))
 	c.CountInt(10, statsd.String("bar"))
 	c.CountInt64(100, statsd.String("bar"))
-	time.Sleep(time.Millisecond * 10)
+	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
 }
 
@@ -105,7 +110,7 @@ func TestGauge(t *testing.T) {
 	c.GaugeInt(1)
 	c.GaugeInt(1, statsd.String("foo"), statsd.String("bar"))
 	c.GaugeInt64(2, statsd.String("foo"), statsd.String("bar"))
-	time.Sleep(time.Millisecond * 10)
+	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\n", s.Content())
 }
 
@@ -115,7 +120,7 @@ func TestTiming(t *testing.T) {
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 	c.Timing(time.Now(), statsd.String("foo"))
-	time.Sleep(time.Millisecond * 10)
+	time.Sleep(time.Millisecond * 100)
 	assert.Contains(t, s.Content(), "|ms\n")
 }
 
@@ -129,7 +134,7 @@ func TestPrefix(t *testing.T) {
 	c.CountInt(3, statsd.String("zoo"))
 	c.CountInt64(10, statsd.String("kong"))
 	c.GaugeInt(100, statsd.String("mong"))
-	time.Sleep(110 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 	assert.Equal(t, "juju.foo:1|c\njuju.bar:1|c\njuju.zoo:3|c\njuju.kong:10|c\njuju.mong:100|g\n", s.Content())
 }
 
@@ -140,7 +145,7 @@ func TestMaxPacketSize(t *testing.T) {
 	c, _ := statsd.New("udp", s.Addr(), statsd.MaxPacketSize(20))
 	c.Increment(statsd.String("foo.bar.zoo"))
 	c.Increment(statsd.String("foo.bar.zoo"))
-	time.Sleep(time.Millisecond * 10)
+	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo.bar.zoo:1|c\n", s.Content())
 }
 
@@ -154,6 +159,54 @@ func TestErrorHandler(t *testing.T) {
 	}), statsd.FlushPeriod(50*time.Nanosecond))
 	c.Increment(statsd.String("foo.bar.zoo"))
 	l.Close()
-	time.Sleep(time.Millisecond * 10)
+	time.Sleep(time.Millisecond * 100)
 	assert.True(t, gotErr)
+}
+
+func BenchmarkIncrement(b *testing.B) {
+	c, _ := statsd.New("udp", "127.0.0.1:1")
+	foo, bar, zoo := "foo", "bar", 1
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		c.Increment(statsd.String(foo), statsd.String(bar), statsd.Int(zoo))
+	}
+}
+
+func BenchmarkCount(b *testing.B) {
+	c, _ := statsd.New("udp", "127.0.0.1:1")
+	foo, bar, zoo := "foo", "bar", 1
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		c.CountInt(10, statsd.String(foo), statsd.String(bar), statsd.Int(zoo))
+	}
+}
+
+func BenchmarkGauge(b *testing.B) {
+	c, _ := statsd.New("udp", "127.0.0.1:1")
+	foo, bar, zoo := "foo", "bar", 1
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		c.GaugeInt(10, statsd.String(foo), statsd.String(bar), statsd.Int(zoo))
+	}
+}
+
+func BenchmarkTiming(b *testing.B) {
+	c, _ := statsd.New("udp", "127.0.0.1:1")
+	foo, bar, zoo := "foo", "bar", 1
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		c.Timing(time.Now(), statsd.String(foo), statsd.String(bar), statsd.Int(zoo))
+	}
 }
