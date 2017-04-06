@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+var (
+	dialTimeout = net.DialTimeout
+)
+
 type clientConn struct {
 	network, addr string
 	c             *Client
@@ -16,27 +20,16 @@ type clientConn struct {
 }
 
 func newClientConn(network, addr string, c *Client) (*clientConn, error) {
-	conn, err := net.DialTimeout(network, addr, c.opts.timeout)
+	conn, err := dialTimeout(network, addr, c.opts.timeout)
 	if err != nil {
 		return nil, err
-	}
-
-	// When using UDP do a quick check to see if something is listening on the
-	// given port to return an error as soon as possible.
-	if network == "udp" {
-		for i := 0; i < 2; i++ {
-			_, err = conn.Write(nil)
-			if err != nil {
-				conn.Close()
-				return nil, err
-			}
-		}
 	}
 
 	cc := &clientConn{
 		network: network,
 		addr:    addr,
 		c:       c,
+		conn:    conn,
 		buf:     make([]byte, 0, c.opts.maxPacketSize),
 	}
 
@@ -71,7 +64,13 @@ func (cc *clientConn) flush() {
 }
 
 func (cc *clientConn) handleError(err error) {
-	if err != nil && cc.c.opts.errHandler != nil {
+	if err == nil {
+		return
+	}
+
+	if cc.c.opts.errHandler != nil {
 		cc.c.opts.errHandler(err)
 	}
+
+	// TODO: reconnect if network net is a stream-orientend network: "tcp", "tcp4"
 }

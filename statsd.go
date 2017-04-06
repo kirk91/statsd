@@ -1,13 +1,6 @@
 package statsd
 
-import (
-	"errors"
-	"time"
-)
-
-var (
-	ErrInvalidNetwork = errors.New("invalid network")
-)
+import "time"
 
 type options struct {
 	timeout       time.Duration
@@ -57,12 +50,6 @@ type Client struct {
 }
 
 func New(network, addr string, opt ...Option) (*Client, error) {
-	switch network {
-	case "udp", "tcp", "tcp4", "tcp6":
-	default:
-		return nil, ErrInvalidNetwork
-	}
-
 	c := &Client{}
 	for _, o := range opt {
 		o(&c.opts)
@@ -80,7 +67,7 @@ func New(network, addr string, opt ...Option) (*Client, error) {
 
 	cc, err := newClientConn(network, addr, c)
 	if err != nil {
-		return c, err
+		return nil, err
 	}
 
 	c.cc = cc

@@ -27,7 +27,7 @@ type Field struct {
 	Str  string
 }
 
-func (f Field) AppendTo(b *buf) {
+func (f Field) appendTo(b *buf) {
 	switch f.Type {
 	case FieldTypeString:
 		b.AppendString(f.Str)
@@ -77,15 +77,16 @@ func encode(typ MetricType, prefix string, bucket []Field, val Field) *buf {
 
 	last := n - 1
 	for i := range bucket {
-		bucket[i].AppendTo(b)
+		bucket[i].appendTo(b)
 		if i < last {
 			b.AppendString(".")
 		}
 	}
 
 	b.AppendString(":")
-	val.AppendTo(b)
+	val.appendTo(b)
 
+	b.AppendString("|")
 	switch typ {
 	case MetricTypeGauge:
 		b.AppendString("g\n")
