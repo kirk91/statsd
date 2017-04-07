@@ -1,6 +1,9 @@
 package statsd
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 type MetricType uint8
 
@@ -18,7 +21,12 @@ const (
 	FieldTypeInt32
 	FieldTypeInt16
 	FieldTypeInt8
-	FieldTypeInt
+	FieldTypeUint64
+	FieldTypeUint32
+	FieldTypeUint16
+	FieldTypeUint8
+	FieldTypeFloat32
+	FieldTypeFloat64
 )
 
 type Field struct {
@@ -31,8 +39,26 @@ func (f Field) appendTo(b *buf) {
 	switch f.Type {
 	case FieldTypeString:
 		b.AppendString(f.Str)
-	case FieldTypeInt64, FieldTypeInt32, FieldTypeInt16, FieldTypeInt8, FieldTypeInt:
-		b.AppendInt(f.Int)
+	case FieldTypeFloat64:
+		b.AppendFloat64(math.Float64frombits(uint64(f.Int)))
+	case FieldTypeFloat32:
+		b.AppendFloat32(math.Float32frombits(uint32(f.Int)))
+	case FieldTypeInt8:
+		b.AppendInt8(int8(f.Int))
+	case FieldTypeInt16:
+		b.AppendInt16(int16(f.Int))
+	case FieldTypeInt32:
+		b.AppendInt32(int32(f.Int))
+	case FieldTypeInt64:
+		b.AppendInt64(f.Int)
+	case FieldTypeUint8:
+		b.AppendUint8(uint8(f.Int))
+	case FieldTypeUint16:
+		b.AppendUint16(uint16(f.Int))
+	case FieldTypeUint32:
+		b.AppendUint32(uint32(f.Int))
+	case FieldTypeUint64:
+		b.AppendUint64(uint64(f.Int))
 	default:
 		panic(fmt.Sprintf("unknown field type: %v", f.Type))
 	}
@@ -58,8 +84,25 @@ func Int8(val int8) Field {
 	return Field{Type: FieldTypeInt8, Int: int64(val)}
 }
 
-func Int(val int) Field {
-	return Field{Type: FieldTypeInt, Int: int64(val)}
+func Uint64(val uint64) Field {
+	return Field{Type: FieldTypeUint64, Int: int64(val)}
+}
+func Uint32(val uint64) Field {
+	return Field{Type: FieldTypeUint32, Int: int64(val)}
+}
+func Uint16(val uint64) Field {
+	return Field{Type: FieldTypeUint16, Int: int64(val)}
+}
+func Uint8(val uint64) Field {
+	return Field{Type: FieldTypeUint8, Int: int64(val)}
+}
+
+func Float32(val float32) Field {
+	return Field{Type: FieldTypeFloat32, Int: int64(math.Float32bits(val))}
+}
+
+func Float64(val float64) Field {
+	return Field{Type: FieldTypeFloat64, Int: int64(math.Float64bits(val))}
 }
 
 func encode(typ MetricType, prefix string, bucket []Field, val Field) *buf {

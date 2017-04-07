@@ -76,19 +76,19 @@ func New(network, addr string, opt ...Option) (*Client, error) {
 }
 
 func (c *Client) Increment(bucket ...Field) {
-	c.CountInt(1, bucket...)
+	c.CountInt32(1, bucket...)
 }
 
-func (c *Client) CountInt(n int, bucket ...Field) {
-	c.send(encode(MetricTypeCount, c.opts.prefix, bucket, Int(n)))
+func (c *Client) CountInt32(n int32, bucket ...Field) {
+	c.send(encode(MetricTypeCount, c.opts.prefix, bucket, Int32(n)))
 }
 
 func (c *Client) CountInt64(n int64, bucket ...Field) {
 	c.send(encode(MetricTypeCount, c.opts.prefix, bucket, Int64(n)))
 }
 
-func (c *Client) GaugeInt(n int, bucket ...Field) {
-	c.send(encode(MetricTypeGauge, c.opts.prefix, bucket, Int(n)))
+func (c *Client) GaugeInt32(n int32, bucket ...Field) {
+	c.send(encode(MetricTypeGauge, c.opts.prefix, bucket, Int32(n)))
 }
 
 func (c *Client) GaugeInt64(n int64, bucket ...Field) {
@@ -96,7 +96,7 @@ func (c *Client) GaugeInt64(n int64, bucket ...Field) {
 }
 
 func (c *Client) Timing(start time.Time, bucket ...Field) {
-	c.send(encode(MetricTypeTiming, c.opts.prefix, bucket, Int64(time.Now().Sub(start).Nanoseconds()/int64(time.Millisecond))))
+	c.send(encode(MetricTypeTiming, c.opts.prefix, bucket, Float64(float64(time.Now().Sub(start).Nanoseconds())/float64(time.Millisecond))))
 }
 
 func (c *Client) send(b *buf) {
