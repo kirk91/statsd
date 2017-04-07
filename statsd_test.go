@@ -82,7 +82,7 @@ func TestIncrement(t *testing.T) {
 	assert.Equal(t, "foo:1|c\n", s.Content())
 
 	s.Reset()
-	c.Increment(statsd.String("foo"), statsd.Int(1), statsd.String("bar"))
+	c.Increment(statsd.String("foo"), statsd.Int8(1), statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo.1.bar:1|c\n", s.Content())
 }
@@ -93,9 +93,9 @@ func TestCount(t *testing.T) {
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 
-	c.CountInt(1, statsd.String("foo"))
+	c.CountInt32(1, statsd.String("foo"))
 	c.CountInt64(3, statsd.String("foo"))
-	c.CountInt(10, statsd.String("bar"))
+	c.CountInt32(10, statsd.String("bar"))
 	c.CountInt64(100, statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
@@ -107,8 +107,8 @@ func TestGauge(t *testing.T) {
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 
-	c.GaugeInt(1)
-	c.GaugeInt(1, statsd.String("foo"), statsd.String("bar"))
+	c.GaugeInt32(1)
+	c.GaugeInt32(1, statsd.String("foo"), statsd.String("bar"))
 	c.GaugeInt64(2, statsd.String("foo"), statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\n", s.Content())
@@ -131,9 +131,9 @@ func TestPrefix(t *testing.T) {
 	c, _ := statsd.New("udp", s.Addr(), statsd.Prefix("juju"))
 	c.Increment(statsd.String("foo"))
 	c.Increment(statsd.String("bar"))
-	c.CountInt(3, statsd.String("zoo"))
+	c.CountInt32(3, statsd.String("zoo"))
 	c.CountInt64(10, statsd.String("kong"))
-	c.GaugeInt(100, statsd.String("mong"))
+	c.GaugeInt32(100, statsd.String("mong"))
 	time.Sleep(200 * time.Millisecond)
 	assert.Equal(t, "juju.foo:1|c\njuju.bar:1|c\njuju.zoo:3|c\njuju.kong:10|c\njuju.mong:100|g\n", s.Content())
 }
@@ -171,42 +171,42 @@ func BenchmarkIncrement(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		c.Increment(statsd.String(foo), statsd.String(bar), statsd.Int(zoo))
+		c.Increment(statsd.String(foo), statsd.String(bar), statsd.Int32(int32(zoo)))
 	}
 }
 
 func BenchmarkCount(b *testing.B) {
 	c, _ := statsd.New("udp", "127.0.0.1:1")
-	foo, bar, zoo := "foo", "bar", 1
+	foo, bar, zoo := "foo", "bar", int32(1)
 
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		c.CountInt(10, statsd.String(foo), statsd.String(bar), statsd.Int(zoo))
+		c.CountInt32(10, statsd.String(foo), statsd.String(bar), statsd.Int32(zoo))
 	}
 }
 
 func BenchmarkGauge(b *testing.B) {
 	c, _ := statsd.New("udp", "127.0.0.1:1")
-	foo, bar, zoo := "foo", "bar", 1
+	foo, bar, zoo := "foo", "bar", int64(1)
 
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		c.GaugeInt(10, statsd.String(foo), statsd.String(bar), statsd.Int(zoo))
+		c.GaugeInt32(10, statsd.String(foo), statsd.String(bar), statsd.Int64(zoo))
 	}
 }
 
 func BenchmarkTiming(b *testing.B) {
 	c, _ := statsd.New("udp", "127.0.0.1:1")
-	foo, bar, zoo := "foo", "bar", 1
+	foo, bar, zoo := "foo", "bar", int32(1)
 
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		c.Timing(time.Now(), statsd.String(foo), statsd.String(bar), statsd.Int(zoo))
+		c.Timing(time.Now(), statsd.String(foo), statsd.String(bar), statsd.Int32(zoo))
 	}
 }
