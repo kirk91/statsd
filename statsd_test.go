@@ -77,14 +77,24 @@ func TestIncrement(t *testing.T) {
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 
+	c.Increment(statsd.Int8(1), statsd.Int16(200), statsd.Int32(1000), statsd.Int64(10000))
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, "1.200.1000.10000:1|c\n", s.Content())
+
+	s.Reset()
+	c.Increment(statsd.Uint8(1), statsd.Uint16(200), statsd.Uint32(1000), statsd.Uint64(10000))
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, "1.200.1000.10000:1|c\n", s.Content())
+
+	s.Reset()
 	c.Increment(statsd.String("foo"))
-	time.Sleep(time.Millisecond)
+	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo:1|c\n", s.Content())
 
 	s.Reset()
-	c.Increment(statsd.String("foo"), statsd.Int8(1), statsd.String("bar"))
+	c.Increment(statsd.String("foo"), statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
-	assert.Equal(t, "foo.1.bar:1|c\n", s.Content())
+	assert.Equal(t, "foo.bar:1|c\n", s.Content())
 }
 
 func TestCount(t *testing.T) {
@@ -145,7 +155,7 @@ func TestMaxPacketSize(t *testing.T) {
 	c, _ := statsd.New("udp", s.Addr(), statsd.MaxPacketSize(20))
 	c.Increment(statsd.String("foo.bar.zoo"))
 	c.Increment(statsd.String("foo.bar.zoo"))
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Millisecond * 80)
 	assert.Equal(t, "foo.bar.zoo:1|c\n", s.Content())
 }
 
