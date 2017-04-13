@@ -80,23 +80,47 @@ func (c *Client) Increment(bucket ...Field) {
 }
 
 func (c *Client) CountInt32(n int32, bucket ...Field) {
-	c.send(encode(MetricTypeCount, c.opts.prefix, bucket, Int32(n)))
+	c.send(encode(MetricTypeCount, Int32(n), c.opts.prefix, bucket))
 }
 
 func (c *Client) CountInt64(n int64, bucket ...Field) {
-	c.send(encode(MetricTypeCount, c.opts.prefix, bucket, Int64(n)))
+	c.send(encode(MetricTypeCount, Int64(n), c.opts.prefix, bucket))
 }
 
 func (c *Client) GaugeInt32(n int32, bucket ...Field) {
-	c.send(encode(MetricTypeGauge, c.opts.prefix, bucket, Int32(n)))
+	c.send(encode(MetricTypeGauge, Int32(n), c.opts.prefix, bucket))
 }
 
 func (c *Client) GaugeInt64(n int64, bucket ...Field) {
-	c.send(encode(MetricTypeGauge, c.opts.prefix, bucket, Int64(n)))
+	c.send(encode(MetricTypeGauge, Int64(n), c.opts.prefix, bucket))
 }
 
 func (c *Client) Timing(start time.Time, bucket ...Field) {
-	c.send(encode(MetricTypeTiming, c.opts.prefix, bucket, Float64(float64(time.Now().Sub(start).Nanoseconds())/float64(time.Millisecond))))
+	c.send(encode(MetricTypeTiming, Float64(float64(time.Now().Sub(start).Nanoseconds())/float64(time.Millisecond)), c.opts.prefix, bucket))
+}
+
+func (c *Client) Incrementf(template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeCount, Int32(1), c.opts.prefix, template, args))
+}
+
+func (c *Client) CountInt32f(n int32, template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeCount, Int32(n), c.opts.prefix, template, args))
+}
+
+func (c *Client) CountInt64f(n int64, template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeCount, Int64(n), c.opts.prefix, template, args))
+}
+
+func (c *Client) GaugeInt32f(n int32, template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeGauge, Int32(n), c.opts.prefix, template, args))
+}
+
+func (c *Client) GaugeInt64f(n int64, template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeGauge, Int64(n), c.opts.prefix, template, args))
+}
+
+func (c *Client) Timingf(start time.Time, template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeTiming, Float64(float64(time.Now().Sub(start).Nanoseconds())/float64(time.Millisecond)), c.opts.prefix, template, args))
 }
 
 func (c *Client) send(b *buf) {
