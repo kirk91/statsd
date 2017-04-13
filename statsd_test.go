@@ -167,7 +167,12 @@ func TestTiming(t *testing.T) {
 	defer s.Close()
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
-	c.Timing(time.Now(), statsd.String("foo"))
+	c.Timing(10*time.Millisecond, statsd.String("foo"))
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, "foo:10|ms\n", s.Content())
+
+	s.Reset()
+	c.TimingSince(time.Now(), statsd.String("foo"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Contains(t, s.Content(), "|ms\n")
 }
@@ -177,7 +182,12 @@ func TestTimingf(t *testing.T) {
 	defer s.Close()
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
-	c.Timingf(time.Now(), "", "foo")
+	c.Timingf(10*time.Millisecond, "foo")
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, "foo:10|ms\n", s.Content())
+
+	s.Reset()
+	c.TimingSincef(time.Now(), "", "foo")
 	time.Sleep(time.Millisecond * 100)
 	assert.Contains(t, s.Content(), "|ms\n")
 }
@@ -265,6 +275,6 @@ func BenchmarkTiming(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		c.Timing(time.Now(), statsd.String(foo), statsd.String(bar), statsd.Int32(zoo))
+		c.TimingSince(time.Now(), statsd.String(foo), statsd.String(bar), statsd.Int32(zoo))
 	}
 }
