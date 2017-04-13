@@ -87,13 +87,13 @@ func Int8(val int8) Field {
 func Uint64(val uint64) Field {
 	return Field{Type: FieldTypeUint64, Int: int64(val)}
 }
-func Uint32(val uint64) Field {
+func Uint32(val uint32) Field {
 	return Field{Type: FieldTypeUint32, Int: int64(val)}
 }
-func Uint16(val uint64) Field {
+func Uint16(val uint16) Field {
 	return Field{Type: FieldTypeUint16, Int: int64(val)}
 }
-func Uint8(val uint64) Field {
+func Uint8(val uint8) Field {
 	return Field{Type: FieldTypeUint8, Int: int64(val)}
 }
 

@@ -114,9 +114,9 @@ func TestCount(t *testing.T) {
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 
 	c.CountInt32(1, statsd.String("foo"))
-	c.CountInt64(3, statsd.String("foo"))
-	c.CountInt32(10, statsd.String("bar"))
-	c.CountInt64(100, statsd.String("bar"))
+	c.CountUint32(3, statsd.String("foo"))
+	c.CountInt64(10, statsd.String("bar"))
+	c.CountUint64(100, statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
 }
@@ -127,9 +127,9 @@ func TestCountf(t *testing.T) {
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 	c.CountInt32f(1, "", "foo")
-	c.CountInt64f(3, "%s", "foo")
-	c.CountInt32f(10, "bar")
-	c.CountInt64f(100, "bar")
+	c.CountUint32f(3, "%s", "foo")
+	c.CountInt64f(10, "bar")
+	c.CountUint64f(100, "bar")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
 }
@@ -141,10 +141,11 @@ func TestGauge(t *testing.T) {
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 
 	c.GaugeInt32(1)
-	c.GaugeInt32(1, statsd.String("foo"), statsd.String("bar"))
+	c.GaugeUint32(1, statsd.String("foo"), statsd.String("bar"))
 	c.GaugeInt64(2, statsd.String("foo"), statsd.String("bar"))
+	c.GaugeUint64(3, statsd.String("foo"), statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
-	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\n", s.Content())
+	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\nfoo.bar:3|g\n", s.Content())
 }
 
 func TestGaugef(t *testing.T) {
@@ -154,9 +155,11 @@ func TestGaugef(t *testing.T) {
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 
 	c.GaugeInt32f(1, "%s.%s", "foo", "bar")
+	c.GaugeUint32f(1, "%s.%s", "foo", "bar")
 	c.GaugeInt64f(2, "foo.bar")
+	c.GaugeUint64f(2, "foo.bar")
 	time.Sleep(time.Millisecond * 100)
-	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\n", s.Content())
+	assert.Equal(t, "foo.bar:1|g\nfoo.bar:1|g\nfoo.bar:2|g\nfoo.bar:2|g\n", s.Content())
 }
 
 func TestTiming(t *testing.T) {

@@ -83,16 +83,32 @@ func (c *Client) CountInt32(n int32, bucket ...Field) {
 	c.send(encode(MetricTypeCount, Int32(n), c.opts.prefix, bucket))
 }
 
+func (c *Client) CountUint32(n uint32, bucket ...Field) {
+	c.send(encode(MetricTypeCount, Uint32(n), c.opts.prefix, bucket))
+}
+
 func (c *Client) CountInt64(n int64, bucket ...Field) {
 	c.send(encode(MetricTypeCount, Int64(n), c.opts.prefix, bucket))
+}
+
+func (c *Client) CountUint64(n uint64, bucket ...Field) {
+	c.send(encode(MetricTypeCount, Uint64(n), c.opts.prefix, bucket))
 }
 
 func (c *Client) GaugeInt32(n int32, bucket ...Field) {
 	c.send(encode(MetricTypeGauge, Int32(n), c.opts.prefix, bucket))
 }
 
+func (c *Client) GaugeUint32(n uint32, bucket ...Field) {
+	c.send(encode(MetricTypeGauge, Uint32(n), c.opts.prefix, bucket))
+}
+
 func (c *Client) GaugeInt64(n int64, bucket ...Field) {
 	c.send(encode(MetricTypeGauge, Int64(n), c.opts.prefix, bucket))
+}
+
+func (c *Client) GaugeUint64(n uint64, bucket ...Field) {
+	c.send(encode(MetricTypeGauge, Uint64(n), c.opts.prefix, bucket))
 }
 
 func (c *Client) Timing(start time.Time, bucket ...Field) {
@@ -107,16 +123,32 @@ func (c *Client) CountInt32f(n int32, template string, args ...interface{}) {
 	c.send(encodeTpl(MetricTypeCount, Int32(n), c.opts.prefix, template, args))
 }
 
+func (c *Client) CountUint32f(n uint32, template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeCount, Uint32(n), c.opts.prefix, template, args))
+}
+
 func (c *Client) CountInt64f(n int64, template string, args ...interface{}) {
 	c.send(encodeTpl(MetricTypeCount, Int64(n), c.opts.prefix, template, args))
+}
+
+func (c *Client) CountUint64f(n uint64, template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeCount, Uint64(n), c.opts.prefix, template, args))
 }
 
 func (c *Client) GaugeInt32f(n int32, template string, args ...interface{}) {
 	c.send(encodeTpl(MetricTypeGauge, Int32(n), c.opts.prefix, template, args))
 }
 
+func (c *Client) GaugeUint32f(n uint32, template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeGauge, Uint32(n), c.opts.prefix, template, args))
+}
+
 func (c *Client) GaugeInt64f(n int64, template string, args ...interface{}) {
 	c.send(encodeTpl(MetricTypeGauge, Int64(n), c.opts.prefix, template, args))
+}
+
+func (c *Client) GaugeUint64f(n uint64, template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeGauge, Uint64(n), c.opts.prefix, template, args))
 }
 
 func (c *Client) Timingf(start time.Time, template string, args ...interface{}) {
