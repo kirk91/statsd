@@ -111,8 +111,12 @@ func (c *Client) GaugeUint64(n uint64, bucket ...Field) {
 	c.send(encode(MetricTypeGauge, Uint64(n), c.opts.prefix, bucket))
 }
 
-func (c *Client) Timing(start time.Time, bucket ...Field) {
+func (c *Client) TimingSince(start time.Time, bucket ...Field) {
 	c.send(encode(MetricTypeTiming, Float64(float64(time.Now().Sub(start).Nanoseconds())/float64(time.Millisecond)), c.opts.prefix, bucket))
+}
+
+func (c *Client) Timing(duration time.Duration, bucket ...Field) {
+	c.send(encode(MetricTypeTiming, Float64(float64(duration)/float64(time.Millisecond)), c.opts.prefix, bucket))
 }
 
 func (c *Client) Incrementf(template string, args ...interface{}) {
@@ -151,7 +155,11 @@ func (c *Client) GaugeUint64f(n uint64, template string, args ...interface{}) {
 	c.send(encodeTpl(MetricTypeGauge, Uint64(n), c.opts.prefix, template, args))
 }
 
-func (c *Client) Timingf(start time.Time, template string, args ...interface{}) {
+func (c *Client) Timingf(duration time.Duration, template string, args ...interface{}) {
+	c.send(encodeTpl(MetricTypeTiming, Float64(float64(duration)/float64(time.Millisecond)), c.opts.prefix, template, args))
+}
+
+func (c *Client) TimingSincef(start time.Time, template string, args ...interface{}) {
 	c.send(encodeTpl(MetricTypeTiming, Float64(float64(time.Now().Sub(start).Nanoseconds())/float64(time.Millisecond)), c.opts.prefix, template, args))
 }
 
