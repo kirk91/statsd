@@ -97,6 +97,16 @@ func TestIncrement(t *testing.T) {
 	assert.Equal(t, "foo.bar:1|c\n", s.Content())
 }
 
+func TestIncrementf(t *testing.T) {
+	s := newMockServer(t)
+	defer s.Close()
+
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
+	c.Incrementf("foo.%s", "bar")
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, "foo.bar:1|c\n", s.Content())
+}
+
 func TestCount(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
@@ -107,6 +117,19 @@ func TestCount(t *testing.T) {
 	c.CountInt64(3, statsd.String("foo"))
 	c.CountInt32(10, statsd.String("bar"))
 	c.CountInt64(100, statsd.String("bar"))
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
+}
+
+func TestCountf(t *testing.T) {
+	s := newMockServer(t)
+	defer s.Close()
+
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
+	c.CountInt32f(1, "", "foo")
+	c.CountInt64f(3, "%s", "foo")
+	c.CountInt32f(10, "bar")
+	c.CountInt64f(100, "bar")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
 }
@@ -124,12 +147,34 @@ func TestGauge(t *testing.T) {
 	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\n", s.Content())
 }
 
+func TestGaugef(t *testing.T) {
+	s := newMockServer(t)
+	defer s.Close()
+
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
+
+	c.GaugeInt32f(1, "%s.%s", "foo", "bar")
+	c.GaugeInt64f(2, "foo.bar")
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\n", s.Content())
+}
+
 func TestTiming(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 	c.Timing(time.Now(), statsd.String("foo"))
+	time.Sleep(time.Millisecond * 100)
+	assert.Contains(t, s.Content(), "|ms\n")
+}
+
+func TestTimingf(t *testing.T) {
+	s := newMockServer(t)
+	defer s.Close()
+
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
+	c.Timingf(time.Now(), "", "foo")
 	time.Sleep(time.Millisecond * 100)
 	assert.Contains(t, s.Content(), "|ms\n")
 }
