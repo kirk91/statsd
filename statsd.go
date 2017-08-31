@@ -178,96 +178,96 @@ func (c *Client) TimingSincef(start time.Time, template string, args ...interfac
 	c.send(c.encodeTpl(MetricTypeTiming, Float64(float64(time.Now().Sub(start).Nanoseconds())/float64(time.Millisecond)), template, args))
 }
 
-func (c *Client) IncrementWithHostname(bucket ...Field) {
-	c.CountInt32WithHostname(1, bucket...)
+func (c *Client) IncrementWithHost(bucket ...Field) {
+	c.CountInt32WithHost(1, bucket...)
 }
 
-func (c *Client) CountInt32WithHostname(n int32, bucket ...Field) {
-	c.send(c.encodeWithHostname(MetricTypeCount, Int32(n), bucket))
+func (c *Client) CountInt32WithHost(n int32, bucket ...Field) {
+	c.send(c.encodeWithHost(MetricTypeCount, Int32(n), bucket))
 }
 
-func (c *Client) CountUint32WithHostname(n uint32, bucket ...Field) {
-	c.send(c.encodeWithHostname(MetricTypeCount, Uint32(n), bucket))
+func (c *Client) CountUint32WithHost(n uint32, bucket ...Field) {
+	c.send(c.encodeWithHost(MetricTypeCount, Uint32(n), bucket))
 }
 
-func (c *Client) CountInt64WithHostname(n int64, bucket ...Field) {
-	c.send(c.encodeWithHostname(MetricTypeCount, Int64(n), bucket))
+func (c *Client) CountInt64WithHost(n int64, bucket ...Field) {
+	c.send(c.encodeWithHost(MetricTypeCount, Int64(n), bucket))
 }
 
-func (c *Client) CountUint64WithHostname(n uint64, bucket ...Field) {
-	c.send(c.encodeWithHostname(MetricTypeCount, Uint64(n), bucket))
+func (c *Client) CountUint64WithHost(n uint64, bucket ...Field) {
+	c.send(c.encodeWithHost(MetricTypeCount, Uint64(n), bucket))
 }
 
-func (c *Client) GaugeInt32WithHostname(n int32, bucket ...Field) {
-	c.send(c.encodeWithHostname(MetricTypeGauge, Int32(n), bucket))
+func (c *Client) GaugeInt32WithHost(n int32, bucket ...Field) {
+	c.send(c.encodeWithHost(MetricTypeGauge, Int32(n), bucket))
 }
 
-func (c *Client) GaugeUint32WithHostname(n uint32, bucket ...Field) {
-	c.send(c.encodeWithHostname(MetricTypeGauge, Uint32(n), bucket))
+func (c *Client) GaugeUint32WithHost(n uint32, bucket ...Field) {
+	c.send(c.encodeWithHost(MetricTypeGauge, Uint32(n), bucket))
 }
 
-func (c *Client) GaugeInt64WithHostname(n int64, bucket ...Field) {
-	c.send(c.encodeWithHostname(MetricTypeGauge, Int64(n), bucket))
+func (c *Client) GaugeInt64WithHost(n int64, bucket ...Field) {
+	c.send(c.encodeWithHost(MetricTypeGauge, Int64(n), bucket))
 }
 
-func (c *Client) GaugeUint64WithHostname(n uint64, bucket ...Field) {
-	c.send(c.encodeWithHostname(MetricTypeGauge, Uint64(n), bucket))
+func (c *Client) GaugeUint64WithHost(n uint64, bucket ...Field) {
+	c.send(c.encodeWithHost(MetricTypeGauge, Uint64(n), bucket))
 }
 
-func (c *Client) TimingSinceWithHostname(start time.Time, bucket ...Field) {
+func (c *Client) TimingSinceWithHost(start time.Time, bucket ...Field) {
 	elapsed := float64(time.Now().Sub(start).Nanoseconds()) / float64(time.Millisecond)
-	c.send(c.encodeWithHostname(MetricTypeTiming, Float64(elapsed), bucket))
+	c.send(c.encodeWithHost(MetricTypeTiming, Float64(elapsed), bucket))
 }
 
-func (c *Client) TimingWithHostname(duration time.Duration, bucket ...Field) {
-	c.send(c.encodeWithHostname(MetricTypeTiming, Float64(float64(duration)/float64(time.Millisecond)), bucket))
+func (c *Client) TimingWithHost(duration time.Duration, bucket ...Field) {
+	c.send(c.encodeWithHost(MetricTypeTiming, Float64(float64(duration)/float64(time.Millisecond)), bucket))
 }
 
-func (c *Client) IncrementfWithHostname(template string, args ...interface{}) {
-	c.send(c.encodeTplWithHostname(MetricTypeCount, Int32(1), template, args))
+func (c *Client) IncrementfWithHost(template string, args ...interface{}) {
+	c.send(c.encodeTplWithHost(MetricTypeCount, Int32(1), template, args))
 }
 
-func (c *Client) CountInt32fWithHostname(n int32, template string, args ...interface{}) {
-	c.send(c.encodeTplWithHostname(MetricTypeCount, Int32(n), template, args))
+func (c *Client) CountInt32fWithHost(n int32, template string, args ...interface{}) {
+	c.send(c.encodeTplWithHost(MetricTypeCount, Int32(n), template, args))
 }
 
-func (c *Client) CountUint32fWithHostname(n uint32, template string, args ...interface{}) {
-	c.send(c.encodeTplWithHostname(MetricTypeCount, Uint32(n), template, args))
+func (c *Client) CountUint32fWithHost(n uint32, template string, args ...interface{}) {
+	c.send(c.encodeTplWithHost(MetricTypeCount, Uint32(n), template, args))
 }
 
-func (c *Client) CountInt64fWithHostname(n int64, template string, args ...interface{}) {
-	c.send(c.encodeTplWithHostname(MetricTypeCount, Int64(n), template, args))
+func (c *Client) CountInt64fWithHost(n int64, template string, args ...interface{}) {
+	c.send(c.encodeTplWithHost(MetricTypeCount, Int64(n), template, args))
 }
 
-func (c *Client) CountUint64fWithHostname(n uint64, template string, args ...interface{}) {
-	c.send(c.encodeTplWithHostname(MetricTypeCount, Uint64(n), template, args))
+func (c *Client) CountUint64fWithHost(n uint64, template string, args ...interface{}) {
+	c.send(c.encodeTplWithHost(MetricTypeCount, Uint64(n), template, args))
 }
 
-func (c *Client) GaugeInt32fWithHostname(n int32, template string, args ...interface{}) {
-	c.send(c.encodeTplWithHostname(MetricTypeGauge, Int32(n), template, args))
+func (c *Client) GaugeInt32fWithHost(n int32, template string, args ...interface{}) {
+	c.send(c.encodeTplWithHost(MetricTypeGauge, Int32(n), template, args))
 }
 
-func (c *Client) GaugeUint32fWithHostname(n uint32, template string, args ...interface{}) {
-	c.send(c.encodeTplWithHostname(MetricTypeGauge, Uint32(n), template, args))
+func (c *Client) GaugeUint32fWithHost(n uint32, template string, args ...interface{}) {
+	c.send(c.encodeTplWithHost(MetricTypeGauge, Uint32(n), template, args))
 }
 
-func (c *Client) GaugeInt64fWithHostname(n int64, template string, args ...interface{}) {
-	c.send(c.encodeTplWithHostname(MetricTypeGauge, Int64(n), template, args))
+func (c *Client) GaugeInt64fWithHost(n int64, template string, args ...interface{}) {
+	c.send(c.encodeTplWithHost(MetricTypeGauge, Int64(n), template, args))
 }
 
-func (c *Client) GaugeUint64fWithHostname(n uint64, template string, args ...interface{}) {
-	b := c.encodeTplWithHostname(MetricTypeGauge, Uint64(n), template, args)
+func (c *Client) GaugeUint64fWithHost(n uint64, template string, args ...interface{}) {
+	b := c.encodeTplWithHost(MetricTypeGauge, Uint64(n), template, args)
 	c.send(b)
 }
 
-func (c *Client) TimingfWithHostname(duration time.Duration, template string, args ...interface{}) {
-	b := c.encodeTplWithHostname(MetricTypeTiming, Float64(float64(duration)/float64(time.Millisecond)), template, args)
+func (c *Client) TimingfWithHost(duration time.Duration, template string, args ...interface{}) {
+	b := c.encodeTplWithHost(MetricTypeTiming, Float64(float64(duration)/float64(time.Millisecond)), template, args)
 	c.send(b)
 }
 
-func (c *Client) TimingSincefWithHostname(start time.Time, template string, args ...interface{}) {
+func (c *Client) TimingSincefWithHost(start time.Time, template string, args ...interface{}) {
 	elapsed := float64(time.Now().Sub(start).Nanoseconds()) / float64(time.Millisecond)
-	b := c.encodeTplWithHostname(MetricTypeTiming, Float64(elapsed), template, args)
+	b := c.encodeTplWithHost(MetricTypeTiming, Float64(elapsed), template, args)
 	c.send(b)
 }
 
@@ -275,7 +275,7 @@ func (c *Client) encode(typ MetricType, val Field, bucket []Field) *buf {
 	return encode(typ, val, c.opts.prefix, "", bucket)
 }
 
-func (c *Client) encodeWithHostname(typ MetricType, val Field, bucket []Field) *buf {
+func (c *Client) encodeWithHost(typ MetricType, val Field, bucket []Field) *buf {
 	return encode(typ, val, c.opts.prefix, c.opts.hostname, bucket)
 }
 
@@ -283,7 +283,7 @@ func (c *Client) encodeTpl(typ MetricType, val Field, template string, fmtArgs [
 	return encodeTpl(typ, val, c.opts.prefix, "", template, fmtArgs)
 }
 
-func (c *Client) encodeTplWithHostname(typ MetricType, val Field, template string, fmtArgs []interface{}) *buf {
+func (c *Client) encodeTplWithHost(typ MetricType, val Field, template string, fmtArgs []interface{}) *buf {
 	return encodeTpl(typ, val, c.opts.prefix, c.opts.hostname, template, fmtArgs)
 }
 

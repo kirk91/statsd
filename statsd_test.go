@@ -91,7 +91,7 @@ func TestIncrement(t *testing.T) {
 	assert.Equal(t, "1.200.1000.10000:1|c\n", s.Content())
 
 	s.Reset()
-	c.IncrementWithHostname(statsd.Uint8(1), statsd.Uint16(200), statsd.Uint32(1000), statsd.Uint64(10000))
+	c.IncrementWithHost(statsd.Uint8(1), statsd.Uint16(200), statsd.Uint32(1000), statsd.Uint64(10000))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, hostname+"."+"1.200.1000.10000:1|c\n", s.Content())
 
@@ -101,7 +101,7 @@ func TestIncrement(t *testing.T) {
 	assert.Equal(t, "foo:1|c\n", s.Content())
 
 	s.Reset()
-	c.IncrementWithHostname(statsd.String("foo"), statsd.String("bar"))
+	c.IncrementWithHost(statsd.String("foo"), statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, hostname+"."+"foo.bar:1|c\n", s.Content())
 }
@@ -116,7 +116,7 @@ func TestIncrementf(t *testing.T) {
 	assert.Equal(t, "foo.bar:1|c\n", s.Content())
 
 	s.Reset()
-	c.IncrementfWithHostname("foo.%s", "barbar")
+	c.IncrementfWithHost("foo.%s", "barbar")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, Hostname()+"."+"foo.barbar:1|c\n", s.Content())
 }
@@ -135,10 +135,10 @@ func TestCount(t *testing.T) {
 	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
 
 	s.Reset()
-	c.CountInt32WithHostname(1, statsd.String("foo"))
-	c.CountUint32WithHostname(3, statsd.String("foo"))
-	c.CountInt64WithHostname(10, statsd.String("bar"))
-	c.CountUint64WithHostname(100, statsd.String("bar"))
+	c.CountInt32WithHost(1, statsd.String("foo"))
+	c.CountUint32WithHost(3, statsd.String("foo"))
+	c.CountInt64WithHost(10, statsd.String("bar"))
+	c.CountUint64WithHost(100, statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, fmt.Sprintf("%s.foo:1|c\n%[1]s.foo:3|c\n%[1]s.bar:10|c\n%[1]s.bar:100|c\n", Hostname()), s.Content())
 }
@@ -156,10 +156,10 @@ func TestCountf(t *testing.T) {
 	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
 
 	s.Reset()
-	c.CountInt32fWithHostname(1, "", "foo")
-	c.CountUint32fWithHostname(3, "%s", "foo")
-	c.CountInt64fWithHostname(10, "bar")
-	c.CountUint64fWithHostname(100, "bar")
+	c.CountInt32fWithHost(1, "", "foo")
+	c.CountUint32fWithHost(3, "%s", "foo")
+	c.CountInt64fWithHost(10, "bar")
+	c.CountUint64fWithHost(100, "bar")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, fmt.Sprintf("%s.foo:1|c\n%[1]s.foo:3|c\n%[1]s.bar:10|c\n%[1]s.bar:100|c\n", Hostname()), s.Content())
 }
@@ -178,10 +178,10 @@ func TestGauge(t *testing.T) {
 	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\nfoo.bar:3|g\n", s.Content())
 
 	s.Reset()
-	c.GaugeInt32WithHostname(1)
-	c.GaugeUint32WithHostname(1, statsd.String("foo"), statsd.String("bar"))
-	c.GaugeInt64WithHostname(2, statsd.String("foo"), statsd.String("bar"))
-	c.GaugeUint64WithHostname(3, statsd.String("foo"), statsd.String("bar"))
+	c.GaugeInt32WithHost(1)
+	c.GaugeUint32WithHost(1, statsd.String("foo"), statsd.String("bar"))
+	c.GaugeInt64WithHost(2, statsd.String("foo"), statsd.String("bar"))
+	c.GaugeUint64WithHost(3, statsd.String("foo"), statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, fmt.Sprintf("%s.foo.bar:1|g\n%[1]s.foo.bar:2|g\n%[1]s.foo.bar:3|g\n", Hostname()), s.Content())
 }
@@ -200,10 +200,10 @@ func TestGaugef(t *testing.T) {
 	assert.Equal(t, "foo.bar:1|g\nfoo.bar:1|g\nfoo.bar:2|g\nfoo.bar:2|g\n", s.Content())
 
 	s.Reset()
-	c.GaugeInt32fWithHostname(1, "%s.%s", "foo", "bar")
-	c.GaugeUint32fWithHostname(1, "%s.%s", "foo", "bar")
-	c.GaugeInt64fWithHostname(2, "foo.bar")
-	c.GaugeUint64fWithHostname(2, "foo.bar")
+	c.GaugeInt32fWithHost(1, "%s.%s", "foo", "bar")
+	c.GaugeUint32fWithHost(1, "%s.%s", "foo", "bar")
+	c.GaugeInt64fWithHost(2, "foo.bar")
+	c.GaugeUint64fWithHost(2, "foo.bar")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, fmt.Sprintf("%s.foo.bar:1|g\n%[1]s.foo.bar:1|g\n%[1]s.foo.bar:2|g\n%[1]s.foo.bar:2|g\n", Hostname()), s.Content())
 }
@@ -219,7 +219,7 @@ func TestTiming(t *testing.T) {
 	assert.Equal(t, "foo:10|ms\n", s.Content())
 
 	s.Reset()
-	c.TimingWithHostname(10*time.Millisecond, statsd.String("foo"))
+	c.TimingWithHost(10*time.Millisecond, statsd.String("foo"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, Hostname()+"."+"foo:10|ms\n", s.Content())
 
@@ -229,7 +229,7 @@ func TestTiming(t *testing.T) {
 	assert.Contains(t, s.Content(), "|ms\n")
 
 	s.Reset()
-	c.TimingSinceWithHostname(time.Now(), statsd.String("foo"))
+	c.TimingSinceWithHost(time.Now(), statsd.String("foo"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Contains(t, s.Content(), Hostname())
 	assert.Contains(t, s.Content(), "|ms\n")
@@ -245,7 +245,7 @@ func TestTimingf(t *testing.T) {
 	assert.Equal(t, "foo:10|ms\n", s.Content())
 
 	s.Reset()
-	c.TimingfWithHostname(10*time.Millisecond, "foo")
+	c.TimingfWithHost(10*time.Millisecond, "foo")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, Hostname()+"."+"foo:10|ms\n", s.Content())
 
@@ -255,7 +255,7 @@ func TestTimingf(t *testing.T) {
 	assert.Contains(t, s.Content(), "|ms\n")
 
 	s.Reset()
-	c.TimingSincefWithHostname(time.Now(), "", "foo")
+	c.TimingSincefWithHost(time.Now(), "", "foo")
 	time.Sleep(time.Millisecond * 100)
 	assert.Contains(t, s.Content(), Hostname())
 	assert.Contains(t, s.Content(), "|ms\n")
@@ -281,9 +281,9 @@ func TestHostname(t *testing.T) {
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.Prefix("juju"), statsd.Hostname("fake-host"))
 	c.Increment(statsd.String("foo"))
-	c.IncrementWithHostname(statsd.String("bar"))
+	c.IncrementWithHost(statsd.String("bar"))
 	c.CountInt32(3, statsd.String("zoo"))
-	c.CountInt64WithHostname(10, statsd.String("kong"))
+	c.CountInt64WithHost(10, statsd.String("kong"))
 	c.GaugeInt32(100, statsd.String("mong"))
 	time.Sleep(200 * time.Millisecond)
 	assert.Equal(t, "juju.foo:1|c\njuju.fake-host.bar:1|c\njuju.zoo:3|c\njuju.fake-host.kong:10|c\njuju.mong:100|g\n", s.Content())
