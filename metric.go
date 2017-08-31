@@ -105,7 +105,7 @@ func Float64(val float64) Field {
 	return Field{Type: FieldTypeFloat64, Int: int64(math.Float64bits(val))}
 }
 
-func encode(typ MetricType, val Field, prefix string, bucket []Field) *buf {
+func encode(typ MetricType, val Field, prefix string, hostname string, bucket []Field) *buf {
 	n := len(bucket)
 	if n == 0 {
 		return nil
@@ -115,6 +115,10 @@ func encode(typ MetricType, val Field, prefix string, bucket []Field) *buf {
 
 	if prefix != "" {
 		b.AppendString(prefix)
+		b.AppendString(".")
+	}
+	if hostname != "" {
+		b.AppendString(hostname)
 		b.AppendString(".")
 	}
 
@@ -144,7 +148,7 @@ func encode(typ MetricType, val Field, prefix string, bucket []Field) *buf {
 	return b
 }
 
-func encodeTpl(typ MetricType, val Field, prefix string, template string, fmtArgs []interface{}) *buf {
+func encodeTpl(typ MetricType, val Field, prefix string, hostname string, template string, fmtArgs []interface{}) *buf {
 	msg := template
 	if msg == "" && len(fmtArgs) > 0 {
 		msg = fmt.Sprint(fmtArgs...)
@@ -152,5 +156,5 @@ func encodeTpl(typ MetricType, val Field, prefix string, template string, fmtArg
 		msg = fmt.Sprintf(template, fmtArgs...)
 	}
 
-	return encode(typ, val, prefix, []Field{String(msg)})
+	return encode(typ, val, prefix, hostname, []Field{String(msg)})
 }
