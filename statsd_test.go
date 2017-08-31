@@ -2,7 +2,10 @@ package statsd_test
 
 import (
 	"bytes"
+	"fmt"
 	"net"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -71,20 +74,26 @@ func (s *mockServer) Content() string {
 	return string(s.buf.Bytes())
 }
 
+func Hostname() string {
+	s, _ := os.Hostname()
+	return strings.Replace(s, ".", "_", -1)
+}
+
 func TestIncrement(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
+	hostname := Hostname()
 
 	c.Increment(statsd.Int8(1), statsd.Int16(200), statsd.Int32(1000), statsd.Int64(10000))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "1.200.1000.10000:1|c\n", s.Content())
 
 	s.Reset()
-	c.Increment(statsd.Uint8(1), statsd.Uint16(200), statsd.Uint32(1000), statsd.Uint64(10000))
+	c.IncrementWithHostname(statsd.Uint8(1), statsd.Uint16(200), statsd.Uint32(1000), statsd.Uint64(10000))
 	time.Sleep(time.Millisecond * 100)
-	assert.Equal(t, "1.200.1000.10000:1|c\n", s.Content())
+	assert.Equal(t, hostname+"."+"1.200.1000.10000:1|c\n", s.Content())
 
 	s.Reset()
 	c.Increment(statsd.String("foo"))
@@ -92,9 +101,9 @@ func TestIncrement(t *testing.T) {
 	assert.Equal(t, "foo:1|c\n", s.Content())
 
 	s.Reset()
-	c.Increment(statsd.String("foo"), statsd.String("bar"))
+	c.IncrementWithHostname(statsd.String("foo"), statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
-	assert.Equal(t, "foo.bar:1|c\n", s.Content())
+	assert.Equal(t, hostname+"."+"foo.bar:1|c\n", s.Content())
 }
 
 func TestIncrementf(t *testing.T) {
@@ -105,6 +114,11 @@ func TestIncrementf(t *testing.T) {
 	c.Incrementf("foo.%s", "bar")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo.bar:1|c\n", s.Content())
+
+	s.Reset()
+	c.IncrementfWithHostname("foo.%s", "barbar")
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, Hostname()+"."+"foo.barbar:1|c\n", s.Content())
 }
 
 func TestCount(t *testing.T) {
@@ -119,6 +133,14 @@ func TestCount(t *testing.T) {
 	c.CountUint64(100, statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
+
+	s.Reset()
+	c.CountInt32WithHostname(1, statsd.String("foo"))
+	c.CountUint32WithHostname(3, statsd.String("foo"))
+	c.CountInt64WithHostname(10, statsd.String("bar"))
+	c.CountUint64WithHostname(100, statsd.String("bar"))
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, fmt.Sprintf("%s.foo:1|c\n%[1]s.foo:3|c\n%[1]s.bar:10|c\n%[1]s.bar:100|c\n", Hostname()), s.Content())
 }
 
 func TestCountf(t *testing.T) {
@@ -132,6 +154,14 @@ func TestCountf(t *testing.T) {
 	c.CountUint64f(100, "bar")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo:1|c\nfoo:3|c\nbar:10|c\nbar:100|c\n", s.Content())
+
+	s.Reset()
+	c.CountInt32fWithHostname(1, "", "foo")
+	c.CountUint32fWithHostname(3, "%s", "foo")
+	c.CountInt64fWithHostname(10, "bar")
+	c.CountUint64fWithHostname(100, "bar")
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, fmt.Sprintf("%s.foo:1|c\n%[1]s.foo:3|c\n%[1]s.bar:10|c\n%[1]s.bar:100|c\n", Hostname()), s.Content())
 }
 
 func TestGauge(t *testing.T) {
@@ -146,6 +176,14 @@ func TestGauge(t *testing.T) {
 	c.GaugeUint64(3, statsd.String("foo"), statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\nfoo.bar:3|g\n", s.Content())
+
+	s.Reset()
+	c.GaugeInt32WithHostname(1)
+	c.GaugeUint32WithHostname(1, statsd.String("foo"), statsd.String("bar"))
+	c.GaugeInt64WithHostname(2, statsd.String("foo"), statsd.String("bar"))
+	c.GaugeUint64WithHostname(3, statsd.String("foo"), statsd.String("bar"))
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, fmt.Sprintf("%s.foo.bar:1|g\n%[1]s.foo.bar:2|g\n%[1]s.foo.bar:3|g\n", Hostname()), s.Content())
 }
 
 func TestGaugef(t *testing.T) {
@@ -160,6 +198,14 @@ func TestGaugef(t *testing.T) {
 	c.GaugeUint64f(2, "foo.bar")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo.bar:1|g\nfoo.bar:1|g\nfoo.bar:2|g\nfoo.bar:2|g\n", s.Content())
+
+	s.Reset()
+	c.GaugeInt32fWithHostname(1, "%s.%s", "foo", "bar")
+	c.GaugeUint32fWithHostname(1, "%s.%s", "foo", "bar")
+	c.GaugeInt64fWithHostname(2, "foo.bar")
+	c.GaugeUint64fWithHostname(2, "foo.bar")
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, fmt.Sprintf("%s.foo.bar:1|g\n%[1]s.foo.bar:1|g\n%[1]s.foo.bar:2|g\n%[1]s.foo.bar:2|g\n", Hostname()), s.Content())
 }
 
 func TestTiming(t *testing.T) {
@@ -167,13 +213,25 @@ func TestTiming(t *testing.T) {
 	defer s.Close()
 
 	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
+
 	c.Timing(10*time.Millisecond, statsd.String("foo"))
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo:10|ms\n", s.Content())
 
 	s.Reset()
+	c.TimingWithHostname(10*time.Millisecond, statsd.String("foo"))
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, Hostname()+"."+"foo:10|ms\n", s.Content())
+
+	s.Reset()
 	c.TimingSince(time.Now(), statsd.String("foo"))
 	time.Sleep(time.Millisecond * 100)
+	assert.Contains(t, s.Content(), "|ms\n")
+
+	s.Reset()
+	c.TimingSinceWithHostname(time.Now(), statsd.String("foo"))
+	time.Sleep(time.Millisecond * 100)
+	assert.Contains(t, s.Content(), Hostname())
 	assert.Contains(t, s.Content(), "|ms\n")
 }
 
@@ -187,8 +245,19 @@ func TestTimingf(t *testing.T) {
 	assert.Equal(t, "foo:10|ms\n", s.Content())
 
 	s.Reset()
+	c.TimingfWithHostname(10*time.Millisecond, "foo")
+	time.Sleep(time.Millisecond * 100)
+	assert.Equal(t, Hostname()+"."+"foo:10|ms\n", s.Content())
+
+	s.Reset()
 	c.TimingSincef(time.Now(), "", "foo")
 	time.Sleep(time.Millisecond * 100)
+	assert.Contains(t, s.Content(), "|ms\n")
+
+	s.Reset()
+	c.TimingSincefWithHostname(time.Now(), "", "foo")
+	time.Sleep(time.Millisecond * 100)
+	assert.Contains(t, s.Content(), Hostname())
 	assert.Contains(t, s.Content(), "|ms\n")
 }
 
@@ -204,6 +273,20 @@ func TestPrefix(t *testing.T) {
 	c.GaugeInt32(100, statsd.String("mong"))
 	time.Sleep(200 * time.Millisecond)
 	assert.Equal(t, "juju.foo:1|c\njuju.bar:1|c\njuju.zoo:3|c\njuju.kong:10|c\njuju.mong:100|g\n", s.Content())
+}
+
+func TestHostname(t *testing.T) {
+	s := newMockServer(t)
+	defer s.Close()
+
+	c, _ := statsd.New("udp", s.Addr(), statsd.Prefix("juju"), statsd.Hostname("fake-host"))
+	c.Increment(statsd.String("foo"))
+	c.IncrementWithHostname(statsd.String("bar"))
+	c.CountInt32(3, statsd.String("zoo"))
+	c.CountInt64WithHostname(10, statsd.String("kong"))
+	c.GaugeInt32(100, statsd.String("mong"))
+	time.Sleep(200 * time.Millisecond)
+	assert.Equal(t, "juju.foo:1|c\njuju.fake-host.bar:1|c\njuju.zoo:3|c\njuju.fake-host.kong:10|c\njuju.mong:100|g\n", s.Content())
 }
 
 func TestMaxPacketSize(t *testing.T) {
@@ -227,7 +310,7 @@ func TestErrorHandler(t *testing.T) {
 	}), statsd.FlushPeriod(50*time.Nanosecond))
 	c.Increment(statsd.String("foo.bar.zoo"))
 	l.Close()
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Millisecond * 200)
 	assert.True(t, gotErr)
 }
 
