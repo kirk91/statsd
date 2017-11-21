@@ -19,9 +19,11 @@ func TestNewClient(t *testing.T) {
 	_, err = statsd.New("udp", "127.0.0.1:1")
 	assert.NoError(t, err)
 
-	l, err := net.ListenPacket("udp", "")
-	assert.NoError(t, err)
-	assert.NotNil(t, l)
+	l, err := net.ListenPacket("udp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("new udp listener failed: %v", err)
+	}
+	defer l.Close()
 	c, err := statsd.New("udp", l.LocalAddr().String())
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
@@ -34,8 +36,10 @@ type mockServer struct {
 }
 
 func newMockServer(t *testing.T) *mockServer {
-	l, err := net.ListenPacket("udp", "")
-	assert.NoError(t, err)
+	l, err := net.ListenPacket("udp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("new udp listener failed: %v", err)
+	}
 
 	s := &mockServer{l: l}
 
@@ -301,15 +305,17 @@ func TestMaxPacketSize(t *testing.T) {
 }
 
 func TestErrorHandler(t *testing.T) {
-	l, err := net.Listen("tcp", "")
-	assert.NoError(t, err)
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("new tcp listener failed: %v", err)
+	}
 
 	var gotErr bool
 	c, _ := statsd.New("tcp", l.Addr().String(), statsd.ErrorHandler(func(error) {
 		gotErr = true
 	}), statsd.FlushPeriod(50*time.Nanosecond))
 	c.Increment(statsd.String("foo.bar.zoo"))
-	l.Close()
+	l.Close() // close listener
 	time.Sleep(time.Millisecond * 200)
 	assert.True(t, gotErr)
 }
