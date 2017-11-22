@@ -178,16 +178,18 @@ func TestGauge(t *testing.T) {
 	c.GaugeUint32(1, statsd.String("foo"), statsd.String("bar"))
 	c.GaugeInt64(2, statsd.String("foo"), statsd.String("bar"))
 	c.GaugeUint64(3, statsd.String("foo"), statsd.String("bar"))
+	c.GaugeFloat64(4, statsd.String("foo"), statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
-	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\nfoo.bar:3|g\n", s.Content())
+	assert.Equal(t, "foo.bar:1|g\nfoo.bar:2|g\nfoo.bar:3|g\nfoo.bar:4|g\n", s.Content())
 
 	s.Reset()
 	c.GaugeInt32WithHost(1)
 	c.GaugeUint32WithHost(1, statsd.String("foo"), statsd.String("bar"))
 	c.GaugeInt64WithHost(2, statsd.String("foo"), statsd.String("bar"))
 	c.GaugeUint64WithHost(3, statsd.String("foo"), statsd.String("bar"))
+	c.GaugeFloat64WithHost(4, statsd.String("foo"), statsd.String("bar"))
 	time.Sleep(time.Millisecond * 100)
-	assert.Equal(t, fmt.Sprintf("%s.foo.bar:1|g\n%[1]s.foo.bar:2|g\n%[1]s.foo.bar:3|g\n", Hostname()), s.Content())
+	assert.Equal(t, fmt.Sprintf("%s.foo.bar:1|g\n%[1]s.foo.bar:2|g\n%[1]s.foo.bar:3|g\n%[1]s.foo.bar:4|g\n", Hostname()), s.Content())
 }
 
 func TestGaugef(t *testing.T) {
@@ -200,16 +202,18 @@ func TestGaugef(t *testing.T) {
 	c.GaugeUint32f(1, "%s.%s", "foo", "bar")
 	c.GaugeInt64f(2, "foo.bar")
 	c.GaugeUint64f(2, "foo.bar")
+	c.GaugeFloat64f(3, "foo.bar")
 	time.Sleep(time.Millisecond * 100)
-	assert.Equal(t, "foo.bar:1|g\nfoo.bar:1|g\nfoo.bar:2|g\nfoo.bar:2|g\n", s.Content())
+	assert.Equal(t, "foo.bar:1|g\nfoo.bar:1|g\nfoo.bar:2|g\nfoo.bar:2|g\nfoo.bar:3|g\n", s.Content())
 
 	s.Reset()
 	c.GaugeInt32fWithHost(1, "%s.%s", "foo", "bar")
 	c.GaugeUint32fWithHost(1, "%s.%s", "foo", "bar")
 	c.GaugeInt64fWithHost(2, "foo.bar")
 	c.GaugeUint64fWithHost(2, "foo.bar")
+	c.GaugeFloat64fWithHost(3, "foo.bar")
 	time.Sleep(time.Millisecond * 100)
-	assert.Equal(t, fmt.Sprintf("%s.foo.bar:1|g\n%[1]s.foo.bar:1|g\n%[1]s.foo.bar:2|g\n%[1]s.foo.bar:2|g\n", Hostname()), s.Content())
+	assert.Equal(t, fmt.Sprintf("%s.foo.bar:1|g\n%[1]s.foo.bar:1|g\n%[1]s.foo.bar:2|g\n%[1]s.foo.bar:2|g\n%[1]s.foo.bar:3|g\n", Hostname()), s.Content())
 }
 
 func TestTiming(t *testing.T) {

@@ -126,6 +126,10 @@ func (c *Client) GaugeUint64(n uint64, bucket ...Field) {
 	c.send(c.encode(MetricTypeGauge, Uint64(n), bucket))
 }
 
+func (c *Client) GaugeFloat64(n float64, bucket ...Field) {
+	c.send(c.encode(MetricTypeGauge, Float64(n), bucket))
+}
+
 func (c *Client) TimingSince(start time.Time, bucket ...Field) {
 	c.send(c.encode(MetricTypeTiming, Float64(float64(time.Now().Sub(start).Nanoseconds())/float64(time.Millisecond)), bucket))
 }
@@ -168,6 +172,10 @@ func (c *Client) GaugeInt64f(n int64, template string, args ...interface{}) {
 
 func (c *Client) GaugeUint64f(n uint64, template string, args ...interface{}) {
 	c.send(c.encodeTpl(MetricTypeGauge, Uint64(n), template, args))
+}
+
+func (c *Client) GaugeFloat64f(n float64, template string, args ...interface{}) {
+	c.send(c.encodeTpl(MetricTypeGauge, Float64(n), template, args))
 }
 
 func (c *Client) Timingf(duration time.Duration, template string, args ...interface{}) {
@@ -214,6 +222,10 @@ func (c *Client) GaugeUint64WithHost(n uint64, bucket ...Field) {
 	c.send(c.encodeWithHost(MetricTypeGauge, Uint64(n), bucket))
 }
 
+func (c *Client) GaugeFloat64WithHost(n float64, bucket ...Field) {
+	c.send(c.encodeWithHost(MetricTypeGauge, Float64(n), bucket))
+}
+
 func (c *Client) TimingSinceWithHost(start time.Time, bucket ...Field) {
 	elapsed := float64(time.Now().Sub(start).Nanoseconds()) / float64(time.Millisecond)
 	c.send(c.encodeWithHost(MetricTypeTiming, Float64(elapsed), bucket))
@@ -256,8 +268,11 @@ func (c *Client) GaugeInt64fWithHost(n int64, template string, args ...interface
 }
 
 func (c *Client) GaugeUint64fWithHost(n uint64, template string, args ...interface{}) {
-	b := c.encodeTplWithHost(MetricTypeGauge, Uint64(n), template, args)
-	c.send(b)
+	c.send(c.encodeTplWithHost(MetricTypeGauge, Uint64(n), template, args))
+}
+
+func (c *Client) GaugeFloat64fWithHost(n float64, template string, args ...interface{}) {
+	c.send(c.encodeTplWithHost(MetricTypeGauge, Float64(n), template, args))
 }
 
 func (c *Client) TimingfWithHost(duration time.Duration, template string, args ...interface{}) {
