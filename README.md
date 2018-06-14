@@ -37,4 +37,3 @@ BenchmarkTiming-4       10000000               224 ns/op               0 B/op   
 ## Inspired by
 - [statsd](https://github.com/alexcesaro/statsd)
 - [zap](https://github.com/uber-go/zap)
-
