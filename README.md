@@ -32,6 +32,7 @@ BenchmarkIncrement-4    10000000               207 ns/op               0 B/op   
 BenchmarkCount-4        10000000               196 ns/op               0 B/op          0 allocs/op
 BenchmarkGauge-4        10000000               210 ns/op               0 B/op          0 allocs/op
 BenchmarkTiming-4       10000000               224 ns/op               0 B/op          0 allocs/op
+BenchmarkTiming-4       10000000               224 ns/op               0 B/op          0 allocs/op
 ```
 
 ## Inspired by
