@@ -336,6 +336,20 @@ func BenchmarkIncrement(b *testing.B) {
 	}
 }
 
+func BenchmarkIncrementParallel(b *testing.B) {
+	c, _ := statsd.New("udp", "127.0.0.1:1")
+	foo, bar, zoo := "foo", "bar", 1
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			c.Increment(statsd.String(foo), statsd.String(bar), statsd.Int32(int32(zoo)))
+		}
+	})
+}
+
 func BenchmarkCount(b *testing.B) {
 	c, _ := statsd.New("udp", "127.0.0.1:1")
 	foo, bar, zoo := "foo", "bar", int32(1)
@@ -346,6 +360,20 @@ func BenchmarkCount(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		c.CountInt32(10, statsd.String(foo), statsd.String(bar), statsd.Int32(zoo))
 	}
+}
+
+func BenchmarkCountParallel(b *testing.B) {
+	c, _ := statsd.New("udp", "127.0.0.1:1")
+	foo, bar, zoo := "foo", "bar", int32(1)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			c.CountInt32(10, statsd.String(foo), statsd.String(bar), statsd.Int32(zoo))
+		}
+	})
 }
 
 func BenchmarkGauge(b *testing.B) {
@@ -360,6 +388,20 @@ func BenchmarkGauge(b *testing.B) {
 	}
 }
 
+func BenchmarkGaugeParallel(b *testing.B) {
+	c, _ := statsd.New("udp", "127.0.0.1:1")
+	foo, bar, zoo := "foo", "bar", int64(1)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			c.GaugeInt32(10, statsd.String(foo), statsd.String(bar), statsd.Int64(zoo))
+		}
+	})
+}
+
 func BenchmarkTiming(b *testing.B) {
 	c, _ := statsd.New("udp", "127.0.0.1:1")
 	foo, bar, zoo := "foo", "bar", int32(1)
@@ -370,4 +412,18 @@ func BenchmarkTiming(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		c.TimingSince(time.Now(), statsd.String(foo), statsd.String(bar), statsd.Int32(zoo))
 	}
+}
+
+func BenchmarkTimingParallel(b *testing.B) {
+	c, _ := statsd.New("udp", "127.0.0.1:1")
+	foo, bar, zoo := "foo", "bar", int32(1)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			c.TimingSince(time.Now(), statsd.String(foo), statsd.String(bar), statsd.Int32(zoo))
+		}
+	})
 }
