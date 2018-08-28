@@ -2,18 +2,21 @@ package statsd
 
 import (
 	"os"
+	"runtime"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
 type options struct {
-	timeout       time.Duration
-	flushPeriod   time.Duration
-	maxPacketSize int
-	errHandler    func(error)
+	prefix                       string
+	hostname                     string
+	timeout                      time.Duration
+	flushPeriod                  time.Duration
+	maxPacketSize                int
+	disalbeMultiCoreOptimization bool
 
-	prefix   string
-	hostname string
+	errHandler func(error)
 }
 
 type Option func(*options)
@@ -54,10 +57,19 @@ func Hostname(hostname string) Option {
 	}
 }
 
+func DisableMultiCoreOptimization() Option {
+	return func(o *options) {
+		o.disalbeMultiCoreOptimization = true
+	}
+}
+
 type Client struct {
 	opts options
 
-	cc *clientConn
+	connCount int
+	conns     []*clientConn
+
+	metricCount uint64 // use to sharding metrics
 }
 
 func New(network, addr string, opt ...Option) (*Client, error) {
@@ -80,12 +92,18 @@ func New(network, addr string, opt ...Option) (*Client, error) {
 		c.opts.maxPacketSize = 1400
 	}
 
-	cc, err := newClientConn(network, addr, c)
-	if err != nil {
-		return nil, err
+	c.connCount = runtime.GOMAXPROCS(0)
+	if c.opts.disalbeMultiCoreOptimization {
+		c.connCount = 1
 	}
-
-	c.cc = cc
+	c.conns = make([]*clientConn, c.connCount)
+	for i := 0; i < c.connCount; i++ {
+		conn, err := newClientConn(network, addr, c)
+		if err != nil {
+			return nil, err
+		}
+		c.conns[i] = conn
+	}
 
 	return c, nil
 }
@@ -306,6 +324,9 @@ func (c *Client) send(b *buf) {
 	if b == nil {
 		return
 	}
-	c.cc.write(b.Bytes())
+
+	idx := atomic.AddUint64(&c.metricCount, 1) % uint64(c.connCount)
+	conn := c.conns[idx]
+	conn.Write(b.Bytes())
 	freeBuf(b)
 }
