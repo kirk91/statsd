@@ -45,7 +45,7 @@ func newClientConn(network, addr string, c *Client) (*clientConn, error) {
 	return cc, nil
 }
 
-func (cc *clientConn) Write(b []byte) {
+func (cc *clientConn) write(b []byte) {
 	cc.mu.Lock()
 	if len(cc.buf)+len(b) > cap(cc.buf) {
 		cc.flush()
