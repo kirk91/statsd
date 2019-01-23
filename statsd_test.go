@@ -14,7 +14,9 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	_, err := statsd.New("udp", "127.0.0.1:1")
+	_, err := statsd.New("foo", "127.0.0.1:1")
+	assert.Error(t, err)
+	_, err = statsd.New("udp", "127.0.0.1:1")
 	assert.NoError(t, err)
 
 	l, err := net.ListenPacket("udp", "127.0.0.1:0")
@@ -85,7 +87,7 @@ func TestIncrement(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 	hostname := Hostname()
 
 	c.Increment(statsd.Int8(1), statsd.Int16(200), statsd.Int32(1000), statsd.Int64(10000))
@@ -112,7 +114,7 @@ func TestIncrementf(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 	c.Incrementf("foo.%s", "bar")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo.bar:1|c\n", s.Content())
@@ -127,7 +129,7 @@ func TestCount(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 
 	c.CountInt32(1, statsd.String("foo"))
 	c.CountUint32(3, statsd.String("foo"))
@@ -149,7 +151,7 @@ func TestCountf(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 	c.CountInt32f(1, "", "foo")
 	c.CountUint32f(3, "%s", "foo")
 	c.CountInt64f(10, "bar")
@@ -170,7 +172,7 @@ func TestGauge(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 
 	c.GaugeInt32(1)
 	c.GaugeUint32(1, statsd.String("foo"), statsd.String("bar"))
@@ -194,7 +196,7 @@ func TestGaugef(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 
 	c.GaugeInt32f(1, "%s.%s", "foo", "bar")
 	c.GaugeUint32f(1, "%s.%s", "foo", "bar")
@@ -218,7 +220,7 @@ func TestTiming(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 
 	c.Timing(10*time.Millisecond, statsd.String("foo"))
 	time.Sleep(time.Millisecond * 100)
@@ -245,7 +247,7 @@ func TestTimingf(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.FlushPeriod(time.Nanosecond*500))
 	c.Timingf(10*time.Millisecond, "foo")
 	time.Sleep(time.Millisecond * 100)
 	assert.Equal(t, "foo:10|ms\n", s.Content())
@@ -271,7 +273,7 @@ func TestPrefix(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.Prefix("juju"), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.Prefix("juju"))
 	c.Increment(statsd.String("foo"))
 	c.Increment(statsd.String("bar"))
 	c.CountInt32(3, statsd.String("zoo"))
@@ -285,7 +287,7 @@ func TestHostname(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.Prefix("juju"), statsd.Hostname("fake-host"), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.Prefix("juju"), statsd.Hostname("fake-host"))
 	c.Increment(statsd.String("foo"))
 	c.IncrementWithHost(statsd.String("bar"))
 	c.CountInt32(3, statsd.String("zoo"))
@@ -299,7 +301,7 @@ func TestMaxPacketSize(t *testing.T) {
 	s := newMockServer(t)
 	defer s.Close()
 
-	c, _ := statsd.New("udp", s.Addr(), statsd.MaxPacketSize(20), statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", s.Addr(), statsd.MaxPacketSize(20))
 	c.Increment(statsd.String("foo.bar.zoo"))
 	c.Increment(statsd.String("foo.bar.zoo"))
 	time.Sleep(time.Millisecond * 80)
@@ -315,7 +317,7 @@ func TestErrorHandler(t *testing.T) {
 	var gotErr bool
 	c, _ := statsd.New("tcp", l.Addr().String(), statsd.ErrorHandler(func(error) {
 		gotErr = true
-	}), statsd.FlushPeriod(50*time.Nanosecond), statsd.DisableMultiCoreOptimization())
+	}), statsd.FlushPeriod(50*time.Nanosecond))
 	c.Increment(statsd.String("foo.bar.zoo"))
 	l.Close() // close listener
 	time.Sleep(time.Millisecond * 200)
@@ -323,7 +325,7 @@ func TestErrorHandler(t *testing.T) {
 }
 
 func BenchmarkIncrement(b *testing.B) {
-	c, _ := statsd.New("udp", "127.0.0.1:1", statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", "127.0.0.1:1")
 	foo, bar, zoo := "foo", "bar", 1
 
 	b.ReportAllocs()
@@ -349,7 +351,7 @@ func BenchmarkIncrementParallel(b *testing.B) {
 }
 
 func BenchmarkCount(b *testing.B) {
-	c, _ := statsd.New("udp", "127.0.0.1:1", statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", "127.0.0.1:1")
 	foo, bar, zoo := "foo", "bar", int32(1)
 
 	b.ReportAllocs()
@@ -375,7 +377,7 @@ func BenchmarkCountParallel(b *testing.B) {
 }
 
 func BenchmarkGauge(b *testing.B) {
-	c, _ := statsd.New("udp", "127.0.0.1:1", statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", "127.0.0.1:1")
 	foo, bar, zoo := "foo", "bar", int64(1)
 
 	b.ReportAllocs()
@@ -401,7 +403,7 @@ func BenchmarkGaugeParallel(b *testing.B) {
 }
 
 func BenchmarkTiming(b *testing.B) {
-	c, _ := statsd.New("udp", "127.0.0.1:1", statsd.DisableMultiCoreOptimization())
+	c, _ := statsd.New("udp", "127.0.0.1:1")
 	foo, bar, zoo := "foo", "bar", int32(1)
 
 	b.ReportAllocs()
